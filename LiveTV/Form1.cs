@@ -23,6 +23,8 @@ namespace LiveTV
         private List<Channel> channels = new List<Channel>();
         private List<Button> channelButtons = new List<Button>();
 
+        private bool fullscreen = false;
+
         public Form1()
         {
             if (!DesignMode)
@@ -92,9 +94,9 @@ namespace LiveTV
                 {
                     string execDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                     string iconPath = "";
-                    if (File.Exists(Path.Combine(execDir, me.Inf + ".png")))
+                    if (File.Exists(Path.Combine(execDir, "channelimg", me.Inf + ".png")))
                     {
-                        iconPath = Path.Combine(execDir, me.Inf + ".png");
+                        iconPath = Path.Combine(execDir, "channelimg", me.Inf + ".png");
                     }
                     channels.Add(new Channel(me.Inf, me.Location, iconPath));
                 }
@@ -127,10 +129,12 @@ namespace LiveTV
                 b.Top = (i / 8) * bHeight;
                 b.Width = bWidth;
                 b.Height = bHeight;
+
+
                 if (!channels[i].icon.Trim().Equals(""))
                 {
                     b.BackgroundImage = Image.FromFile(channels[i].icon);
-                    b.BackgroundImageLayout = ImageLayout.Stretch;
+                    b.BackgroundImageLayout = ImageLayout.Zoom;
                 } else
                 {
                     b.Text = channels[i].name;
@@ -158,6 +162,35 @@ namespace LiveTV
             readProperties();
             //var media = new LibVLCSharp.Shared.Media(_libVLC, new Uri("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"));
             //_mp.Play(media);
+        }
+
+        private void videoView1_DoubleClick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void videoView1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (fullscreen)
+            {
+                this.FormBorderStyle = FormBorderStyle.Sizable;
+                videoView1.Height = flowLayoutPanel1.Top - 18;
+                this.WindowState = FormWindowState.Normal;
+                button1.Text = "<->";
+            }
+            else
+            {
+                this.FormBorderStyle = FormBorderStyle.None;
+                videoView1.Height = this.Height; // flowLayoutPanel1.Bottom - videoView1.Top;
+                this.WindowState = FormWindowState.Maximized;
+                button1.Text = "-><-";
+            }
+            fullscreen = !fullscreen;
         }
     }
 }
