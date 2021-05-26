@@ -1,4 +1,6 @@
-﻿using LibVLCSharp.Shared;
+﻿using ICSharpCode.SharpZipLib.GZip;
+using ICSharpCode.SharpZipLib.Tar;
+using LibVLCSharp.Shared;
 using M3U.NET;
 using System;
 using System.Collections.Generic;
@@ -33,12 +35,7 @@ namespace LiveTV
         private Size oldSize = new Size();
 
         // App properties
-        private string language = "DE";
-        private int channelButtonSize = 20;
-        private List<String> channelBlacklist = new List<string>();
         Settings settings = null;
-
-
 
         public Form1()
         {
@@ -55,7 +52,6 @@ namespace LiveTV
 
         private void readProperties()
         {
-
             // Create file path
             string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string liveTvAppFolder = Path.Combine(appDataFolder, "livetv");
@@ -73,12 +69,7 @@ namespace LiveTV
                 string yamlStr = File.ReadAllText(liveTvProperties, Encoding.UTF8);
                 var deserializer = new DeserializerBuilder().Build();
                 settings = deserializer.Deserialize<Settings>(yamlStr);
-                if (settings != null)
-                {
-                    language = settings.language;
-                    channelBlacklist = settings.channelBlacklist;
-                    channelButtonSize = settings.channelButtonSize;
-                } else
+                if (settings == null)
                 {
                     settings = new Settings();
                 }
@@ -93,6 +84,8 @@ namespace LiveTV
                 MessageBox.Show("Downloaded tvsd.m3u playlist successfully.");
             }
 
+            timer1.Interval = settings.timeoutFullscreenButton;
+
             if (File.Exists(playlistFile))
             {
                 M3UFile m3u = new M3UFile(new FileInfo(playlistFile));
@@ -101,7 +94,7 @@ namespace LiveTV
                 foreach (MediaItem me in m3u.Files)
                 {
                     // Is the channel blacklisted?
-                    if (channelBlacklist.Contains(me.Inf))
+                    if (settings.channelBlacklist.Contains(me.Inf))
                     {
                         continue;
                     }
@@ -112,7 +105,7 @@ namespace LiveTV
                     {
                         iconPath = Path.Combine(execDir, "channelimg", me.Inf + ".png");
                     }
-                    channels.Add(new Channel(me.Inf, me.Location, iconPath));
+                    channels.Add(new Channel(me.Inf, me.Inf, me.Location, iconPath));
                 }
             }
             else
@@ -124,6 +117,8 @@ namespace LiveTV
             // Create icons
             createChannelItems();
 
+            // Update program
+            getEPG();
         }
 
         private void onChannelSelect(object sender, EventArgs e)
@@ -136,13 +131,12 @@ namespace LiveTV
         private void onChannelRemove(object sender, EventArgs e)
         {
             MenuItem mi = sender as MenuItem;
-            if (!channelBlacklist.Contains((String)mi.Tag))
+            if (!settings.channelBlacklist.Contains((String)mi.Tag))
             {
-                channelBlacklist.Add((String)mi.Tag.ToString());
-                MessageBox.Show("Removing " + channelBlacklist[0]);
+                settings.channelBlacklist.Add((String)mi.Tag.ToString());
             }
-            //ContextMenu p1 = mi.Parent as ContextMenu;
-            //p1.SourceControl.Dispose();
+            ContextMenu p1 = mi.Parent as ContextMenu;
+            p1.SourceControl.Dispose();
         }
 
         private void createChannelItems()
@@ -152,8 +146,8 @@ namespace LiveTV
                 b.Dispose();
             }
 
-            int bWidth = channelButtonSize;
-            int bHeight = channelButtonSize;
+            int bWidth = settings.channelButtonSize;
+            int bHeight = settings.channelButtonSize;
 
             for (int i = 0; i < channels.Count; i++)
             {
@@ -197,7 +191,6 @@ namespace LiveTV
                 this.Size = this.oldSize;
                 this.Location = oldLocation;
                 panel1.Height = this.Height - flowLayoutPanel1.Height- 60;
-                button1.Text = "<->";
             }
             else
             {
@@ -210,8 +203,6 @@ namespace LiveTV
                 this.Location = new Point(0, 0);
 
                 panel1.Height = this.Height;
-
-                button1.Text = "-><-";
             }
 
             fullscreen = !fullscreen;
@@ -251,18 +242,56 @@ namespace LiveTV
 
         private void getEPG()
         {
-            //https://bit.ly/FreeEPG
+            
+            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string liveTvAppFolder = Path.Combine(appDataFolder, "livetv");
+            string epgFile = Path.Combine(liveTvAppFolder, DateTime.UtcNow.ToString("dd.MM.yyyy") + "epg.tar.gz");
+            if (File.Exists(epgFile))
+            {
+                updateEpg(epgFile);
+            }
+            else
+            {
+                WebClient wc = new WebClient();
+                wc.DownloadFileCompleted += (sender, e) => updateEpg(epgFile);
+                wc.DownloadFileAsync(new Uri(settings.epgDownload), epgFile);
+            }
+        }
+
+        private void updateEpg(String archive)
+        {
+            MessageBox.Show(archive);   
+            String EPG_FILE = Path.Combine(Path.GetDirectoryName(archive), "epg.xml");
+            String EXTRACT_TARGET = Path.GetDirectoryName(archive);
+
+            // Delete old epg
+            if (File.Exists(EPG_FILE))
+            {
+                File.Delete(EPG_FILE);
+            }
+
+            // Unzip
+            Stream inStream = File.OpenRead(archive);
+            Stream gzipStream = new GZipInputStream(inStream);
+
+            TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream, Encoding.UTF8);
+            tarArchive.ExtractContents(Path.Combine(EXTRACT_TARGET, "epg"), false);
+            tarArchive.Close();
+
+            gzipStream.Close();
+            inStream.Close();
+
+            if (File.Exists(EPG_FILE))
+            {
+                MessageBox.Show("EPG exists");
+            } else
+            {
+                MessageBox.Show("EPG failed");
+            }
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            settings.language = language;
-            settings.channelButtonSize = channelButtonSize;
-            settings.channelBlacklist.Clear();
-            settings.channelBlacklist.AddRange(channelBlacklist);
-
-            MessageBox.Show(channelBlacklist[0]);
-
             var serializer = new SerializerBuilder().Build();
             var yaml = serializer.Serialize(settings);
             string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
