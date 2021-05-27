@@ -142,7 +142,12 @@ namespace LiveTV
                 videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Timeout, MARQUEE_COOLDOWN_MAX);
                 videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Position, 8);
                 videoView1.MediaPlayer.SetMarqueeString(VideoMarqueeOption.Text, cp.channel + ": "+ cp.title + " " + cp.start.ToShortTimeString() + " - " + cp.stop.ToShortTimeString());
+                this.Text = "liveTV " + cp.channelUnlocalized() + ": " + cp.title;
+            } else
+            {
+                this.Text = "liveTV";
             }
+    
         }
 
         private void record()
@@ -325,7 +330,7 @@ namespace LiveTV
                 }
                 if (tvProgram != null)
                 {
-                    statusBar1.Panels[0].Text = "Programm geladen";
+                    label1.Text = "Programm geladen";
                 }
             } else
             {
@@ -376,10 +381,19 @@ namespace LiveTV
                         videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Enable, 1);
                         videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Timeout, MARQUEE_COOLDOWN_MAX);
                         videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Position, 8);
-                        videoView1.MediaPlayer.SetMarqueeString(VideoMarqueeOption.Text, cp.channel + ": " + cp.title + " " + cp.start.ToShortTimeString() + " - " + cp.stop.ToShortTimeString());
+                        videoView1.MediaPlayer.SetMarqueeString(VideoMarqueeOption.Text, cp.channelUnlocalized() + ": " + cp.title + " " + cp.start.ToShortTimeString() + " - " + cp.stop.ToShortTimeString());
+                        this.Text = "liveTV " + cp.channelUnlocalized() + ": " + cp.title;
                     }
                 }
+            } else
+            {
+                this.Text = "liveTV"; ;
             }
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://www.stonedrum.de");
         }
     }
 }

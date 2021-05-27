@@ -35,13 +35,12 @@
             this.button1 = new System.Windows.Forms.Button();
             this.videoView1 = new LibVLCSharp.WinForms.VideoView();
             this.timer1 = new System.Timers.Timer();
-            this.statusBar1 = new System.Windows.Forms.StatusBar();
-            this.statusBarPanel1 = new System.Windows.Forms.StatusBarPanel();
             this.timer2 = new System.Windows.Forms.Timer(this.components);
+            this.label1 = new System.Windows.Forms.Label();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.videoView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.timer1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statusBarPanel1)).BeginInit();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -50,7 +49,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanel1.AutoScroll = true;
             this.flowLayoutPanel1.Enabled = false;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 467);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 483);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.flowLayoutPanel1.Size = new System.Drawing.Size(986, 222);
             this.flowLayoutPanel1.TabIndex = 0;
@@ -108,36 +107,41 @@
             this.timer1.SynchronizingObject = this;
             this.timer1.Elapsed += new System.Timers.ElapsedEventHandler(this.timer1_Elapsed);
             // 
-            // statusBar1
-            // 
-            this.statusBar1.Location = new System.Drawing.Point(0, 695);
-            this.statusBar1.Name = "statusBar1";
-            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
-            this.statusBarPanel1});
-            this.statusBar1.ShowPanels = true;
-            this.statusBar1.Size = new System.Drawing.Size(1010, 22);
-            this.statusBar1.TabIndex = 2;
-            this.statusBar1.Text = "statusBar1";
-            // 
-            // statusBarPanel1
-            // 
-            this.statusBarPanel1.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
-            this.statusBarPanel1.Name = "statusBarPanel1";
-            this.statusBarPanel1.Text = "Kein Programm geladen";
-            this.statusBarPanel1.Width = 989;
-            // 
             // timer2
             // 
             this.timer2.Enabled = true;
             this.timer2.Interval = 1000;
             this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
             // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 463);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(162, 17);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Programm nicht geladen";
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(872, 463);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(126, 17);
+            this.linkLabel1.TabIndex = 3;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "www.stonedrum.de";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1010, 717);
-            this.Controls.Add(this.statusBar1);
+            this.Controls.Add(this.linkLabel1);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -148,8 +152,8 @@
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.videoView1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.timer1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.statusBarPanel1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -160,9 +164,9 @@
         private LibVLCSharp.WinForms.VideoView videoView1;
         private System.Windows.Forms.Button button1;
         private System.Timers.Timer timer1;
-        private System.Windows.Forms.StatusBar statusBar1;
-        private System.Windows.Forms.StatusBarPanel statusBarPanel1;
         private System.Windows.Forms.Timer timer2;
+        private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.Label label1;
     }
 }
 
