@@ -8,7 +8,8 @@ using System.Xml.Serialization;
 namespace LiveTV
 {
     [Serializable()]
-    class Tv
+    [XmlRoot(Namespace = "", ElementName = "tv", DataType = "string", IsNullable = true)]
+    public class Tv
     {
         [XmlAttribute("generator-info-name")]
         public String generatorInfoName { get; set; }

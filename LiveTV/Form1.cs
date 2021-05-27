@@ -1,4 +1,5 @@
-﻿using ICSharpCode.SharpZipLib.GZip;
+﻿using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using LibVLCSharp.Shared;
 using M3U.NET;
@@ -13,6 +14,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 using YamlDotNet.Serialization;
 
 namespace LiveTV
@@ -36,6 +38,7 @@ namespace LiveTV
 
         // App properties
         Settings settings = null;
+        Tv tvProgram = null;
 
         public Form1()
         {
@@ -124,8 +127,20 @@ namespace LiveTV
         private void onChannelSelect(object sender, EventArgs e)
         {
             Button b = sender as Button;
-            var media = new LibVLCSharp.Shared.Media(_libVLC, new Uri(b.Tag as String));
+            var media = new LibVLCSharp.Shared.Media(_libVLC, new Uri(((b.Tag as Channel).url)));
             _mp.Play(media);
+            Programme cp = getcurrentProgramme((b.Tag as Channel).name);
+            if (cp != null)
+            {
+                videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Enable, 1);
+                videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Position, 8);
+                videoView1.MediaPlayer.SetMarqueeString(VideoMarqueeOption.Text, cp.channel + ": "+ cp.title + " " + cp.start.ToLocalTime() + " - " + cp.stop.ToLocalTime());
+            }
+        }
+
+        private void record()
+        {
+            //https://github.com/mfkl/libvlcsharp-samples/blob/master/ScreenRecorder/Program.cs
         }
 
         private void onChannelRemove(object sender, EventArgs e)
@@ -165,7 +180,7 @@ namespace LiveTV
                 {
                     b.Text = channels[i].name;
                 }
-                b.Tag = channels[i].url;
+                b.Tag = channels[i];
 
                 b.ContextMenu = new ContextMenu();
                 MenuItem mi = new MenuItem("Remove " + channels[i].name, onChannelRemove);
@@ -240,53 +255,90 @@ namespace LiveTV
             button1.Show();
         }
 
+        private Programme getcurrentProgramme(string channel)
+        {
+            if (tvProgram != null)
+            {
+                List<Programme> channelPrograms = tvProgram.programme.FindAll(e =>
+                    (e.channelUnlocalized().Equals(channel, StringComparison.OrdinalIgnoreCase)) &&
+                    ((e.start.Date == DateTime.Today) || (e.stop.Date == DateTime.Today)) &&
+                    (DateTime.Now > e.start) && (DateTime.Now < e.stop));
+
+                if (channelPrograms.Count > 0)
+                {
+                    return channelPrograms[0];
+                }
+            }
+            return null;
+        }
+
         private void getEPG()
         {
             
             string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string liveTvAppFolder = Path.Combine(appDataFolder, "livetv");
-            string epgFile = Path.Combine(liveTvAppFolder, DateTime.UtcNow.ToString("dd.MM.yyyy") + "epg.tar.gz");
-            if (File.Exists(epgFile))
+            string epgZipFile = Path.Combine(liveTvAppFolder, "epg.gz");
+            if (File.Exists(epgZipFile))
             {
-                updateEpg(epgFile);
+                if (File.GetCreationTime(epgZipFile) == DateTime.Today)
+                {
+                    updateEpg(epgZipFile);
+                    return;
+                } else
+                {
+                    File.Delete(epgZipFile); 
+                }
             }
-            else
-            {
-                WebClient wc = new WebClient();
-                wc.DownloadFileCompleted += (sender, e) => updateEpg(epgFile);
-                wc.DownloadFileAsync(new Uri(settings.epgDownload), epgFile);
-            }
+
+            WebClient wc = new WebClient();
+            wc.DownloadFileCompleted += (sender, e) => updateEpg(epgZipFile);
+            wc.DownloadFileAsync(new Uri(settings.epgDownload), epgZipFile);
         }
 
         private void updateEpg(String archive)
         {
-            MessageBox.Show(archive);   
-            String EPG_FILE = Path.Combine(Path.GetDirectoryName(archive), "epg.xml");
-            String EXTRACT_TARGET = Path.GetDirectoryName(archive);
+            string EPG_XML_FILE = "epg.xml";
+            String EPG_XML_PATH_ABSOLUTE = Path.Combine(Path.GetDirectoryName(archive), EPG_XML_FILE);
 
             // Delete old epg
-            if (File.Exists(EPG_FILE))
+            if (File.Exists(EPG_XML_PATH_ABSOLUTE))
             {
-                File.Delete(EPG_FILE);
+                File.Delete(EPG_XML_PATH_ABSOLUTE);
             }
 
-            // Unzip
-            Stream inStream = File.OpenRead(archive);
-            Stream gzipStream = new GZipInputStream(inStream);
+            ExtractEPGGZip(archive, EPG_XML_PATH_ABSOLUTE);
 
-            TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream, Encoding.UTF8);
-            tarArchive.ExtractContents(Path.Combine(EXTRACT_TARGET, "epg"), false);
-            tarArchive.Close();
-
-            gzipStream.Close();
-            inStream.Close();
-
-            if (File.Exists(EPG_FILE))
+            if (File.Exists(EPG_XML_PATH_ABSOLUTE))
             {
-                MessageBox.Show("EPG exists");
+                XmlSerializer xmls = new XmlSerializer(typeof(Tv));
+                using (Stream reader = new FileStream(EPG_XML_PATH_ABSOLUTE, FileMode.Open))
+                {
+                    tvProgram = (Tv)xmls.Deserialize(reader);
+                }
+                if (tvProgram != null)
+                {
+                    statusBar1.Panels[0].Text = "Programm geladen";
+                }
             } else
             {
-                MessageBox.Show("EPG failed");
+                MessageBox.Show("EPG extraction failed.");
+            }
+        }
+
+        public void ExtractEPGGZip(string gzipFileName, string targetFile)
+        {
+            // Use a 4K buffer. Any larger is a waste.    
+            byte[] dataBuffer = new byte[4096];
+
+            using (System.IO.Stream fs = new FileStream(gzipFileName, FileMode.Open, FileAccess.Read))
+            {
+                using (GZipInputStream gzipStream = new GZipInputStream(fs))
+                {
+                    using (FileStream fsOut = File.Create(targetFile))
+                    {
+                        StreamUtils.Copy(gzipStream, fsOut, dataBuffer);
+                    }
+                }
             }
         }
 

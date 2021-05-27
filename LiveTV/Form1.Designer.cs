@@ -34,9 +34,12 @@
             this.button1 = new System.Windows.Forms.Button();
             this.videoView1 = new LibVLCSharp.WinForms.VideoView();
             this.timer1 = new System.Timers.Timer();
+            this.statusBar1 = new System.Windows.Forms.StatusBar();
+            this.statusBarPanel1 = new System.Windows.Forms.StatusBarPanel();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.videoView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.timer1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.statusBarPanel1)).BeginInit();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -46,7 +49,7 @@
             this.flowLayoutPanel1.AutoScroll = true;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 467);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(986, 238);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(986, 222);
             this.flowLayoutPanel1.TabIndex = 0;
             // 
             // panel1
@@ -102,11 +105,30 @@
             this.timer1.SynchronizingObject = this;
             this.timer1.Elapsed += new System.Timers.ElapsedEventHandler(this.timer1_Elapsed);
             // 
+            // statusBar1
+            // 
+            this.statusBar1.Location = new System.Drawing.Point(0, 695);
+            this.statusBar1.Name = "statusBar1";
+            this.statusBar1.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+            this.statusBarPanel1});
+            this.statusBar1.ShowPanels = true;
+            this.statusBar1.Size = new System.Drawing.Size(1010, 22);
+            this.statusBar1.TabIndex = 2;
+            this.statusBar1.Text = "statusBar1";
+            // 
+            // statusBarPanel1
+            // 
+            this.statusBarPanel1.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+            this.statusBarPanel1.Name = "statusBarPanel1";
+            this.statusBarPanel1.Text = "Kein Programm geladen";
+            this.statusBarPanel1.Width = 989;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1010, 717);
+            this.Controls.Add(this.statusBar1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -117,6 +139,7 @@
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.videoView1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.timer1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.statusBarPanel1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -128,6 +151,8 @@
         private LibVLCSharp.WinForms.VideoView videoView1;
         private System.Windows.Forms.Button button1;
         private System.Timers.Timer timer1;
+        private System.Windows.Forms.StatusBar statusBar1;
+        private System.Windows.Forms.StatusBarPanel statusBarPanel1;
     }
 }
 

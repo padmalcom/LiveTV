@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace LiveTV
 {
-    class Channel
+    public class Channel
     {
         [XmlAttribute("id")]
         public String id { get; set; }
@@ -26,5 +26,7 @@ namespace LiveTV
             this.url = url;
             this.icon = icon;
         }
+
+        public Channel() { }
     }
 }
