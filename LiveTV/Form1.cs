@@ -30,8 +30,12 @@ namespace LiveTV
         private bool fullscreen = false;
 
         private const int FULLSCREEN_COOLDOWN_MAX = 100;
+        private const int MARQUEE_COOLDOWN_MAX = 4000;
 
         private int fullscreenCooldown = FULLSCREEN_COOLDOWN_MAX;
+
+        private Programme currentProgramme = null;
+        private string currentChannel = "";
 
         private Point oldLocation = new Point();
         private Size oldSize = new Size();
@@ -129,12 +133,15 @@ namespace LiveTV
             Button b = sender as Button;
             var media = new LibVLCSharp.Shared.Media(_libVLC, new Uri(((b.Tag as Channel).url)));
             _mp.Play(media);
+            currentChannel = (b.Tag as Channel).name;
             Programme cp = getcurrentProgramme((b.Tag as Channel).name);
             if (cp != null)
             {
+                // Documentation: https://github.com/videolan/libvlcsharp/blob/3.x/docs/how_do_I_do_X.md#how-do-i-use-marquee-
                 videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Enable, 1);
+                videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Timeout, MARQUEE_COOLDOWN_MAX);
                 videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Position, 8);
-                videoView1.MediaPlayer.SetMarqueeString(VideoMarqueeOption.Text, cp.channel + ": "+ cp.title + " " + cp.start.ToLocalTime() + " - " + cp.stop.ToLocalTime());
+                videoView1.MediaPlayer.SetMarqueeString(VideoMarqueeOption.Text, cp.channel + ": "+ cp.title + " " + cp.start.ToShortTimeString() + " - " + cp.stop.ToShortTimeString());
             }
         }
 
@@ -266,6 +273,7 @@ namespace LiveTV
 
                 if (channelPrograms.Count > 0)
                 {
+                    currentProgramme = channelPrograms[0];
                     return channelPrograms[0];
                 }
             }
@@ -323,6 +331,7 @@ namespace LiveTV
             {
                 MessageBox.Show("EPG extraction failed.");
             }
+            flowLayoutPanel1.Enabled = true;
         }
 
         public void ExtractEPGGZip(string gzipFileName, string targetFile)
@@ -350,6 +359,27 @@ namespace LiveTV
             string liveTvAppFolder = Path.Combine(appDataFolder, "livetv");
             string liveTvProperties = Path.Combine(liveTvAppFolder, "properties.yml");
             File.WriteAllText(liveTvProperties, yaml);
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            // Check Program update
+
+            if (tvProgram != null)
+            {
+                Programme cp = getcurrentProgramme(currentChannel);
+                if (cp != null)
+                {
+                    if (!cp.title.Equals(currentProgramme.title))
+                    {
+                        currentProgramme = cp;
+                        videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Enable, 1);
+                        videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Timeout, MARQUEE_COOLDOWN_MAX);
+                        videoView1.MediaPlayer.SetMarqueeInt(VideoMarqueeOption.Position, 8);
+                        videoView1.MediaPlayer.SetMarqueeString(VideoMarqueeOption.Text, cp.channel + ": " + cp.title + " " + cp.start.ToShortTimeString() + " - " + cp.stop.ToShortTimeString());
+                    }
+                }
+            }
         }
     }
 }
