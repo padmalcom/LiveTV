@@ -295,7 +295,7 @@ namespace LiveTV
             {
                 if (File.GetCreationTime(epgZipFile) == DateTime.Today)
                 {
-                    updateEpg(epgZipFile);
+                    updateEpg(epgZipFile, null);
                     return;
                 } else
                 {
@@ -304,12 +304,18 @@ namespace LiveTV
             }
 
             WebClient wc = new WebClient();
-            wc.DownloadFileCompleted += (sender, e) => updateEpg(epgZipFile);
+            wc.DownloadFileCompleted += (sender, e) => updateEpg(epgZipFile, e.Error);
             wc.DownloadFileAsync(new Uri(settings.epgDownload), epgZipFile);
         }
 
-        private void updateEpg(String archive)
+        private void updateEpg(String archive, Exception e)
         {
+            if (e != null)
+            {
+                MessageBox.Show("Fehler beim Download des elektronischen Programms: " + e.ToString());
+                flowLayoutPanel1.Enabled = true;
+                return;
+            }
             string EPG_XML_FILE = "epg.xml";
             String EPG_XML_PATH_ABSOLUTE = Path.Combine(Path.GetDirectoryName(archive), EPG_XML_FILE);
 
