@@ -205,6 +205,10 @@ namespace LiveTV
 
         private void Form1_Shown(object sender, EventArgs e)
         {
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+
             readProperties();
             Color col = button1.BackColor;
             button1.BackColor = Color.FromArgb(50, col.R, col.G, col.B);
@@ -217,7 +221,7 @@ namespace LiveTV
                 this.FormBorderStyle = FormBorderStyle.Sizable;
                 this.Size = this.oldSize;
                 this.Location = oldLocation;
-                panel1.Height = this.Height - flowLayoutPanel1.Height- 60;
+                panel1.Height = this.Height - flowLayoutPanel1.Height- 65;
             }
             else
             {
@@ -400,6 +404,31 @@ namespace LiveTV
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start("https://www.stonedrum.de");
+        }
+
+        private void videoView1_DoubleClick(object sender, EventArgs e)
+        {
+            if (fullscreen)
+            {
+                this.FormBorderStyle = FormBorderStyle.Sizable;
+                this.Size = this.oldSize;
+                this.Location = oldLocation;
+                panel1.Height = this.Height - flowLayoutPanel1.Height - 65;
+            }
+            else
+            {
+                this.oldSize = new Size(this.Size.Width, this.Size.Height);
+                this.oldLocation = new Point(this.Location.X, this.Location.Y);
+
+                this.FormBorderStyle = FormBorderStyle.None;
+                var rectangle = Screen.FromControl(this).Bounds;
+                this.Size = new Size(rectangle.Width, rectangle.Height);
+                this.Location = new Point(0, 0);
+
+                panel1.Height = this.Height;
+            }
+
+            fullscreen = !fullscreen;
         }
     }
 }

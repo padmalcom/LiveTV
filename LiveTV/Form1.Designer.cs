@@ -98,6 +98,7 @@
             this.videoView1.Size = new System.Drawing.Size(1004, 443);
             this.videoView1.TabIndex = 0;
             this.videoView1.Text = "videoView1";
+            this.videoView1.DoubleClick += new System.EventHandler(this.videoView1_DoubleClick);
             this.videoView1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.videoView1_MouseMove);
             // 
             // timer1
@@ -140,10 +141,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1010, 717);
-            this.Controls.Add(this.linkLabel1);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.flowLayoutPanel1);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.linkLabel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "LiveTV";
